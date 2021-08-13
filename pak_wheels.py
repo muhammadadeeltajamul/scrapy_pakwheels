@@ -92,22 +92,23 @@ def get_clean_dictionary(dictionary):
     price = get_array_attribute_safely(dictionary, "offers", "price")
     currency = get_array_attribute_safely(dictionary, "offers",
                                           "priceCurrency")
-    if price is not None and currency is not None:
+    if price and currency:
         clean_dict["Price"] = str(price) + str(currency)
-    elif price is not None:
+    elif price:
         clean_dict["Price"] = price
     return clean_dict
 
 
 class PakWheelsCrawler(scrapy.Spider):
-    """This class is used to crawl website using
-    scrapy
+    """
+    This class is used to crawl website using
+    scrapy spider
     """
 
     name = "pak_wheels"
 
     def __init__(self):
-        self.base_url = "https://www.pakwheels.com"
+        self.base_url = "https://www.pakwheels.com/"
         self.dots = 0
         self.dot_limit = 5
         super().__init__()
@@ -117,9 +118,9 @@ class PakWheelsCrawler(scrapy.Spider):
         to start crawl
         """
 
-        used_cars_url = "https://www.pakwheels.com/used-cars/search/"
+        used_cars_url = self.base_url + "used-cars/search/"
         used_cars_url += "-/featured_1/"
-        new_cars_url = "https://www.pakwheels.com/new-cars/search/"
+        new_cars_url = self.base_url + "new-cars/search/"
         new_cars_url += "make_any/model_any/price_any_any/?page=1&"
         new_cars_url += "sortby=price+ASC"
         yield scrapy.Request(url=used_cars_url,
@@ -142,8 +143,8 @@ class PakWheelsCrawler(scrapy.Spider):
         xpath_to_data += "script/text()"
         complete_data_in_json = response.xpath(xpath_to_data).getall()
 
-        for vehicle_data in complete_data_in_json:
-            json_data = json.loads(vehicle_data)
+        for data in complete_data_in_json:
+            json_data = json.loads(data)
             yield get_clean_dictionary(json_data)
 
         next_page_link = response.xpath("//li[@class='next_page']/a//@href")\
@@ -173,8 +174,8 @@ class PakWheelsCrawler(scrapy.Spider):
         next_page_link = response.xpath("//li[@class='next_page']/a//@href") \
             .get()
 
-        for vehicle_data in complete_data_in_json:
-            json_data = json.loads(vehicle_data)
+        for data in complete_data_in_json:
+            json_data = json.loads(data)
             yield get_clean_dictionary(json_data)
 
         self.dots = (self.dots % self.dot_limit) + 1
